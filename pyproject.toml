@@ -1,0 +1,11 @@
+[project]
+name = "purview-ai-telegram-bot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aiogram>=3.24.0",
+    "pydantic-settings>=2.12.0",
+    "replicate>=1.0.7",
+]
