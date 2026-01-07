@@ -1,6 +1,9 @@
-from aiogram.types import Message
+"""Получение изображения из сообщения."""
+
 import base64
 import io
+
+from aiogram.types import Message
 
 
 async def extract_image_from_message(msg: Message) -> str | None:

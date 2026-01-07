@@ -1,10 +1,10 @@
-"""Состояния бота"""
+"""Состояния генерации."""
 
 from aiogram.fsm.state import State, StatesGroup
 
 
 class GenerateState(StatesGroup):
-    """Состояния бота"""
+    """Выбор типа генерации"""
 
     GENERATE_VIDEO = State()
     PROCESS_IMAGE = State()
