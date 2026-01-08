@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /app
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app/src
+      - ./pyproject.toml:/app/pyproject.toml
+      - ./uv.lock:/app/uv.lock
+    ports:
+      - "8000:8000"
+    command: uv run src/main.py

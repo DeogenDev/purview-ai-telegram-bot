@@ -23,8 +23,8 @@ class NotifyBase(ABC):
 
 
 class ErrorNotify(NotifyBase):
-    PREFIX_TEXT = "🆘 Ошибка. Пользователь - @{user_name}, текст ошибки - \n\n{text}"
+    PREFIX_TEXT = "🆘 Ошибка. Пользователь - @{user_name}, текст ошибки - {text}"
 
 
 class GenerationNotify(NotifyBase):
-    PREFIX_TEXT = "⚙️ Генерация. Пользователь @{user_name} выполнил генерацию. - \n\n{text}"
+    PREFIX_TEXT = "⚙️ Генерация. Пользователь @{user_name} выполнил генерацию. - {text}"

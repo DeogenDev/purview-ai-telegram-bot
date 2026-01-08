@@ -10,9 +10,9 @@ from src.shared import conf
 
 class VideoRequest(BaseModel):
     model: str = conf.replicate.video_model
-    mode: str = "standard"
+    resolution: str = "720p"
     prompt: str
-    start_image: str
+    image: str
 
 
 class ImageRequest(BaseModel):
@@ -46,6 +46,10 @@ class ReplicateService:
         output = await self._client.async_run(
             request.model,
             input=request.model_dump(),
+            params={
+                "wait": True,
+                "stream": False,
+            },
         )
         return output
 

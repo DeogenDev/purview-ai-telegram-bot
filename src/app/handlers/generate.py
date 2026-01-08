@@ -156,7 +156,7 @@ async def processing_image(
         )
         await error_notify.send_admin(
             message.from_user.username,
-            f"Ошибка при обработке фото - \n\n {e}",
+            f"Ошибка при обработке фото - {e}",
         )
 
 
@@ -177,11 +177,12 @@ async def generate_video(
             await message.answer("🟠 Нужно отправить изображение. Начните заново!")
             return
 
-        await message.answer("Генерация видео...")
+        await message.answer(GenerateVideo.GENERATION_TEXT)
 
         output = await replicate_service.generate(
-            VideoRequest(start_image=image, prompt=caption)
+            VideoRequest(image=image, prompt=caption)
         )
+        print(output)
         await state.clear()
         await message.answer_document(output.url, reply_markup=new_generation)
         await generation_notify.send_admin(
@@ -193,5 +194,5 @@ async def generate_video(
         )
         await error_notify.send_admin(
             message.from_user.username,
-            f"Произошла ошибка, при генерации видео - \n\n {e}",
+            f"Произошла ошибка, при генерации видео - {e}",
         )
