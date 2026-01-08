@@ -11,4 +11,4 @@ COPY . /app
 ENV BASE_DIR=/app
 ENV PYTHONPATH="${PYTHONPATH}:${BASE_DIR}/src:${BASE_DIR}/"
 
-CMD ["python", "src/main.py"]
+CMD ["uv", "run", "src/main.py"]
