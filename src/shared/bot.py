@@ -2,6 +2,6 @@
 
 from aiogram import Bot
 
-from shared.config import conf
+from src.shared.config import conf
 
 bot = Bot(token=conf.bot.token)

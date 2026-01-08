@@ -25,3 +25,18 @@ start_keyboard = InlineKeyboardMarkup(
         ],
     ]
 )
+
+
+cancel_keyboard = InlineKeyboardMarkup(
+    inline_keyboard=[[InlineKeyboardButton(text="❌ Отмена", callback_data="cancel")]]
+)
+
+new_generation = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text="Новая генерация", callback_data="start_new_generation"
+            )
+        ]
+    ]
+)

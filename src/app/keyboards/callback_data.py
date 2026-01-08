@@ -8,5 +8,5 @@ class ChoiceCallbackData:
     add_color = "add_color"
 
     @classmethod
-    def choices(cls):
-        return [f"{cls.__name__}.{choice}" for choice in cls._choices()]
+    def choice(cls):
+        return [value for key, value in cls.__dict__.items() if isinstance(value, str)]

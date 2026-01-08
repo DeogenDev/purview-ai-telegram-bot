@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from typing import Union
 
-from shared import conf
+from src.shared import conf
 
 
 class VideoRequest(BaseModel):

@@ -1,20 +1,12 @@
 """Настройки приложения"""
 
-from enum import Enum
-
 from pydantic import BaseModel, field_validator
 from pydantic_settings import BaseSettings
-
-
-class TypeMedia(str, Enum):
-    IMAGE = "image"
-    VIDEO = "video"
 
 
 class BotConfig(BaseModel):
     token: str
     admin_id: int
-    web_app_url: str
     managers: list[int]
 
     @field_validator("managers")

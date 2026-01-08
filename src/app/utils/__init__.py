@@ -1,6 +1,6 @@
 """Утилиты."""
 
-from shared import bot, conf
+from src.shared import bot, conf
 from .notify import ErrorNotify, GenerationNotify
 from .exctract_image import extract_image_from_message
 

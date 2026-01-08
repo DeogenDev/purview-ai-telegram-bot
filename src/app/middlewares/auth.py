@@ -4,7 +4,7 @@ from typing import Union
 from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery
 
-from shared import conf
+from src.shared import conf
 
 
 class AuthMiddleware(BaseMiddleware):
