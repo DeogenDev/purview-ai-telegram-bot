@@ -22,6 +22,7 @@ class ReplicateConfig(BaseModel):
     image_model: str
     remove_background_model: str
     add_color_model: str
+    upscale_image_model: str
 
 
 class Config(BaseSettings):

@@ -6,6 +6,7 @@ from .replicate import (
     RemoveBackgroundRequest,
     ImageRequest,
     AddColorRequest,
+    UpscaleImageRequest,
 )
 
 __all__ = (
@@ -14,4 +15,5 @@ __all__ = (
     "RemoveBackgroundRequest",
     "ImageRequest",
     "AddColorRequest",
+    "UpscaleImageRequest",
 )

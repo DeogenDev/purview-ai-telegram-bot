@@ -33,6 +33,13 @@ class AddColorRequest(BaseModel):
     model_size: str = "large"
 
 
+class UpscaleImageRequest(BaseModel):
+    model: str = conf.replicate.upscale_image_model
+    image: str
+    scale: float = 5.0
+    face_enhance: bool = True
+
+
 class ReplicateService:
     def __init__(self, api_key: str) -> None:
         self._client = Client(api_token=api_key)

@@ -23,6 +23,11 @@ start_keyboard = InlineKeyboardMarkup(
                 text="Добавить цвет", callback_data=ChoiceCallbackData.add_color
             ),
         ],
+        [
+            InlineKeyboardButton(
+                text="Улучшить качество", callback_data=ChoiceCallbackData.upscale_image
+            )
+        ],
     ]
 )
 

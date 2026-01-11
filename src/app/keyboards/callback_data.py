@@ -6,6 +6,7 @@ class ChoiceCallbackData:
     generate_video = "generate_video"
     remove_background = "remove_background"
     add_color = "add_color"
+    upscale_image = "upscale_image"
 
     @classmethod
     def choice(cls):

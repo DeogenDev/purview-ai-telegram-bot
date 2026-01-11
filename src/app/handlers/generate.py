@@ -14,8 +14,15 @@ from src.services import (
     VideoRequest,
     AddColorRequest,
     RemoveBackgroundRequest,
+    UpscaleImageRequest,
 )
-from src.app.texts import ProcessingImage, GenerateVideo, AddColor, RemoveBackground
+from src.app.texts import (
+    ProcessingImage,
+    GenerateVideo,
+    AddColor,
+    RemoveBackground,
+    UpscaleImage,
+)
 from src.app.keyboards import cancel_keyboard, new_generation
 from src.app.utils import extract_image_from_message, error_notify, generation_notify
 
@@ -27,6 +34,7 @@ generate_map_state = {
     GenerateState.GENERATE_VIDEO: VideoRequest,
     GenerateState.REMOVE_BACKGROUND: RemoveBackgroundRequest,
     GenerateState.ADD_COLOR: AddColorRequest,
+    GenerateState.UPSCALE_IMAGE: UpscaleImageRequest,
 }
 
 description_map_state = {
@@ -37,12 +45,17 @@ description_map_state = {
 generation_map_state = {
     GenerateState.ADD_COLOR: AddColor.GENERATION_TEXT,
     GenerateState.REMOVE_BACKGROUND: RemoveBackground.GENERATION_TEXT,
+    GenerateState.UPSCALE_IMAGE: UpscaleImage.GENERATION_TEXT,
 }
 
 
 @router.message(
     (F.document | F.photo),
-    StateFilter(GenerateState.ADD_COLOR, GenerateState.REMOVE_BACKGROUND),
+    StateFilter(
+        GenerateState.ADD_COLOR,
+        GenerateState.REMOVE_BACKGROUND,
+        GenerateState.UPSCALE_IMAGE,
+    ),
 )
 async def generate_wihout_description(message: Message, state: FSMContext):
     """Хендлер для генерации изображения без описания."""
@@ -75,7 +88,7 @@ async def generate_wihout_description(message: Message, state: FSMContext):
         logger.info("Generated image %s", output.url)
         await generation_notify.send_admin(
             message.from_user.username,
-            f"Обработка фото — {current_state}",
+            f"Обработка фото — {current_state.split('.')[-1]}",
         )
 
     except Exception as e:

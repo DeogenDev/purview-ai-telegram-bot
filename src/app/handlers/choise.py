@@ -8,7 +8,13 @@ from aiogram.fsm.context import FSMContext
 
 from ..states import GenerateState
 from ..keyboards import ChoiceCallbackData, cancel_keyboard
-from ..texts import ProcessingImage, GenerateVideo, RemoveBackground, AddColor
+from ..texts import (
+    ProcessingImage,
+    GenerateVideo,
+    RemoveBackground,
+    AddColor,
+    UpscaleImage,
+)
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -18,6 +24,7 @@ choise_map_state = {
     ChoiceCallbackData.generate_video: GenerateState.GENERATE_VIDEO,
     ChoiceCallbackData.remove_background: GenerateState.REMOVE_BACKGROUND,
     ChoiceCallbackData.add_color: GenerateState.ADD_COLOR,
+    ChoiceCallbackData.upscale_image: GenerateState.UPSCALE_IMAGE,
 }
 
 choise_map_texts = {
@@ -25,6 +32,7 @@ choise_map_texts = {
     ChoiceCallbackData.generate_video: GenerateVideo.ABOUT_TEXT,
     ChoiceCallbackData.remove_background: RemoveBackground.ABOUT_TEXT,
     ChoiceCallbackData.add_color: AddColor.ABOUT_TEXT,
+    ChoiceCallbackData.upscale_image: UpscaleImage.ABOUT_TEXT,
 }
 
 

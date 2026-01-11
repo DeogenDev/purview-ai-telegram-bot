@@ -10,3 +10,4 @@ class GenerateState(StatesGroup):
     PROCESS_IMAGE = State()
     REMOVE_BACKGROUND = State()
     ADD_COLOR = State()
+    UPSCALE_IMAGE = State()
