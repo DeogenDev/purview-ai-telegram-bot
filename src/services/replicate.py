@@ -1,5 +1,7 @@
 """Сервис Replicate"""
 
+import asyncio
+
 from replicate.client import Client
 from pydantic import BaseModel
 
@@ -58,6 +60,7 @@ class ReplicateService:
                 "stream": False,
             },
         )
+        asyncio.sleep(1)
         return output
 
 
