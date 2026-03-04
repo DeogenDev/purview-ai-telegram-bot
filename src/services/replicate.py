@@ -42,7 +42,7 @@ class UpscaleImageRequest(BaseModel):
 
 class ReplicateService:
     def __init__(self, api_key: str) -> None:
-        self._client = Client(api_token=api_key)
+        self._client = Client(api_token=api_key, timeout=180)
 
     async def generate(
         self,
