@@ -1,6 +1,6 @@
 """Сервис Replicate"""
 
-import asyncio
+import logging
 
 from replicate.client import Client
 from pydantic import BaseModel
@@ -8,6 +8,8 @@ from pydantic import BaseModel
 from typing import Union
 
 from src.shared import conf
+
+logger = logging.getLogger(__name__)
 
 
 class VideoRequest(BaseModel):
@@ -52,16 +54,25 @@ class ReplicateService:
             VideoRequest, ImageRequest, RemoveBackgroundRequest, AddColorRequest
         ],
     ) -> str:
-        output = await self._client.async_run(
-            request.model,
-            input=request.model_dump(),
-            params={
-                "wait": True,
-                "stream": False,
-            },
-        )
-        asyncio.sleep(1)
-        return output
+        try:
+            prediction = await self._client.predictions.async_create(
+                request.model,
+                input=request.model_dump(),
+                stream=True,
+                wait=True,
+            )
+            async for event in prediction.async_stream():
+                if event.event == "logs":
+                    logger.info(f"Лог: {event.data.strip()}")
 
+            await prediction.async_wait() 
+            logger.info(f"Финальный стейт: {prediction.status}") # Проверьте статус тут
+            logger.info(f"Результат: {prediction.output}")
+
+            if not prediction.output:
+                raise Exception("Нет результата")
+            return prediction.output
+        except Exception as e:
+            raise Exception(f"Ошибка генерации: {prediction.error}")
 
 replicate_service = ReplicateService(api_key=conf.replicate.api_key)

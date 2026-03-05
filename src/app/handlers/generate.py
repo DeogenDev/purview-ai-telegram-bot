@@ -2,10 +2,14 @@
 
 import logging
 
+import httpx
+
 from aiogram import Router, F
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from aiogram.filters.state import StateFilter
+from aiogram.types import BufferedInputFile
+
 
 from ..states import GenerateState
 from src.services import (
@@ -81,11 +85,18 @@ async def generate_wihout_description(message: Message, state: FSMContext):
         request_class = generate_map_state[current_state]
         request = request_class(image=image_base_64)
 
-        output = await replicate_service.generate(request)
-
+        output_url = await replicate_service.generate(request)
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(output_url)
+            if resp.status_code == 200:
+                file_bytes = resp.content
+                if len(file_bytes) <= 52428800: 
+                    photo = BufferedInputFile(file_bytes, filename="upscaled.png")
+                    await message.answer_document(photo, reply_markup=new_generation)
+                else:
+                    await message.answer(f"💾 Файл слишком тяжелый (>50MB). Вот ссылка: {output_url}")
         await state.clear()
-        await message.answer_document(output.url, reply_markup=new_generation)
-        logger.info("Generated image %s", output.url)
+        logger.info("Generated image %s", output_url)
         await generation_notify.send_admin(
             message.from_user.username,
             f"Обработка фото — {current_state.split('.')[-1]}",
@@ -157,7 +168,7 @@ async def processing_image(
             )
         )
 
-        await message.answer_document(output.url, reply_markup=new_generation)
+        await message.answer_document(output, reply_markup=new_generation)
         await generation_notify.send_admin(
             message.from_user.username,
             "Обработка фото.",
@@ -197,7 +208,7 @@ async def generate_video(
         )
         print(output)
         await state.clear()
-        await message.answer_document(output.url, reply_markup=new_generation)
+        await message.answer_document(output, reply_markup=new_generation)
         await generation_notify.send_admin(
             message.from_user.username, "Генерация видео"
         )
