@@ -39,6 +39,20 @@ _MIME_EXT = {
     "image/gif": ".gif",
 }
 
+# Поддерживаемые соотношения сторон (size) для генерации
+SUPPORTED_SIZES = (
+    "1:1",
+    "2:3",
+    "3:2",
+    "3:4",
+    "4:3",
+    "4:5",
+    "5:4",
+    "9:16",
+    "16:9",
+    "21:9",
+)
+
 DOCS_PHOTO_PROMPT = (
     "Micro retouching only, subtle skin clean up, remove acne and dark circles."
     "Keep original face identity 100procent unchanged, preserve original facial features. Do not change eye color, keep natural eyes exactly."
@@ -62,9 +76,9 @@ class ImageRequest(BaseModel):
     model: str = conf.toapis.image_model
     prompt: str
     image_input: list[str] = []  # base64 data URI или URL
+    size: str | None = None  # если None — подберётся по пропорциям фото
     output_format: str = "png"
     resolution: str = "1K"
-    size: str = "original"
     n: int = 1
 
 
@@ -143,6 +157,75 @@ class ToApisService:
         if not match:
             raise ToApisError("Некорректный base64 data URI")
         return match.group("mime"), base64.b64decode(match.group("data"))
+
+    @staticmethod
+    def _image_size(data: bytes) -> tuple[int, int] | None:
+        """Определяет (width, height) по заголовку файла без декодирования."""
+        if data[:8] == b"\x89PNG\r\n\x1a\n" and len(data) >= 24:
+            return (
+                int.from_bytes(data[16:20], "big"),
+                int.from_bytes(data[20:24], "big"),
+            )
+
+        if data[:6] in (b"GIF87a", b"GIF89a") and len(data) >= 10:
+            return (
+                int.from_bytes(data[6:8], "little"),
+                int.from_bytes(data[8:10], "little"),
+            )
+
+        if data[:2] == b"\xff\xd8":
+            i = 2
+            while i + 9 < len(data):
+                if data[i] != 0xFF:
+                    i += 1
+                    continue
+                marker = data[i + 1]
+                if 0xC0 <= marker <= 0xCF and marker not in (0xC4, 0xC8, 0xCC):
+                    return (
+                        int.from_bytes(data[i + 7 : i + 9], "big"),
+                        int.from_bytes(data[i + 5 : i + 7], "big"),
+                    )
+                length = int.from_bytes(data[i + 2 : i + 4], "big")
+                i += 2 + length
+            return None
+
+        if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+            if data[12:16] == b"VP8 " and len(data) >= 30:
+                return (
+                    int.from_bytes(data[26:28], "little") & 0x3FFF,
+                    int.from_bytes(data[28:30], "little") & 0x3FFF,
+                )
+            if data[12:16] == b"VP8X" and len(data) >= 30:
+                return (
+                    1 + int.from_bytes(data[24:27], "little"),
+                    1 + int.from_bytes(data[27:30], "little"),
+                )
+            if data[12:16] == b"VP8L" and len(data) >= 25:
+                b = data[21:25]
+                bits = int.from_bytes(b, "little")
+                return (1 + (bits & 0x3FFF), 1 + ((bits >> 14) & 0x3FFF))
+        return None
+
+    @classmethod
+    def _aspect_ratio_size(cls, width: int, height: int) -> str:
+        """Подбирает ближайший поддерживаемый size по пропорциям фото."""
+        if width <= 0 or height <= 0:
+            return "1:1"
+        ratio = width / height
+        best = min(
+            SUPPORTED_SIZES,
+            key=lambda s: abs((int(s.split(":")[0]) / int(s.split(":")[1])) - ratio),
+        )
+        return best
+
+    def _size_from_image(self, image: str) -> str:
+        """Определяет size по base64 data URI фотографии."""
+        if self._is_data_uri(image):
+            _, content = self._decode_data_uri(image)
+            size = self._image_size(content)
+            if size:
+                return self._aspect_ratio_size(*size)
+        return "1:1"
 
     async def _resolve_image_url(self, image: str) -> str:
         """Принимает URL или base64 data URI, возвращает публичный URL."""
@@ -341,7 +424,13 @@ class ToApisService:
     async def generate_image(self, request: ImageRequest) -> str:
         """Обработка фото: генерирует изображение по описанию, возвращает URL."""
         urls = await self._resolve_image_urls(request.image_input)
-        return await self._generate_image_payload(request.prompt, urls, request.size)
+        if request.size:
+            size = request.size
+        elif request.image_input:
+            size = self._size_from_image(request.image_input[0])
+        else:
+            size = "1:1"
+        return await self._generate_image_payload(request.prompt, urls, size)
 
     async def create_docs_photo(self, request: CreateDocsPhotoRequest) -> str:
         """Фото на документы по шаблону: подставляем фотку, возвращает URL."""
