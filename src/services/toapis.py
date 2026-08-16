@@ -322,11 +322,14 @@ class ToApisService:
                 return url
         return None
 
-    async def _generate_image_payload(self, prompt: str, urls: list[str]) -> str:
+    async def _generate_image_payload(
+        self, prompt: str, urls: list[str], size: str = "1:1"
+    ) -> str:
         """Общая генерация: промпт + список референсных картинок."""
         payload: dict = {
             "model": self.image_model,
             "prompt": prompt,
+            "size": size,
             "n": 1,
             "output_format": "png",
         }
@@ -338,7 +341,7 @@ class ToApisService:
     async def generate_image(self, request: ImageRequest) -> str:
         """Обработка фото: генерирует изображение по описанию, возвращает URL."""
         urls = await self._resolve_image_urls(request.image_input)
-        return await self._generate_image_payload(request.prompt, urls)
+        return await self._generate_image_payload(request.prompt, urls, request.size)
 
     async def create_docs_photo(self, request: CreateDocsPhotoRequest) -> str:
         """Фото на документы по шаблону: подставляем фотку, возвращает URL."""
