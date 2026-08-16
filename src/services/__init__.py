@@ -1,19 +1,13 @@
 """Сервисы приложения"""
 
-from .replicate import (
-    replicate_service,
-    VideoRequest,
-    RemoveBackgroundRequest,
+from .toapis import (
+    toapis_service,
     ImageRequest,
-    AddColorRequest,
-    UpscaleImageRequest,
+    CreateDocsPhotoRequest,
 )
 
 __all__ = (
-    "replicate_service",
-    "VideoRequest",
-    "RemoveBackgroundRequest",
+    "toapis_service",
     "ImageRequest",
-    "AddColorRequest",
-    "UpscaleImageRequest",
+    "CreateDocsPhotoRequest",
 )

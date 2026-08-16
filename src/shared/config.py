@@ -16,18 +16,15 @@ class BotConfig(BaseModel):
         return value
 
 
-class ReplicateConfig(BaseModel):
+class ToApisConfig(BaseModel):
     api_key: str
-    video_model: str
-    image_model: str
-    remove_background_model: str
-    add_color_model: str
-    upscale_image_model: str
+    base_url: str = "https://toapis.com"
+    image_model: str = "gemini-3-pro-image-preview"
 
 
 class Config(BaseSettings):
     bot: BotConfig
-    replicate: ReplicateConfig
+    toapis: ToApisConfig
 
     class Config:
         env_file = ".env"

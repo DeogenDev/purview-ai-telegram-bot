@@ -3,10 +3,7 @@
 
 class ChoiceCallbackData:
     processing_image = "processing_image"
-    generate_video = "generate_video"
-    remove_background = "remove_background"
-    add_color = "add_color"
-    upscale_image = "upscale_image"
+    create_docs_photo = "create_docs_photo"
 
     @classmethod
     def choice(cls):

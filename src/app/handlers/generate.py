@@ -13,19 +13,13 @@ from aiogram.types import BufferedInputFile
 
 from ..states import GenerateState
 from src.services import (
-    replicate_service,
+    toapis_service,
     ImageRequest,
-    VideoRequest,
-    AddColorRequest,
-    RemoveBackgroundRequest,
-    UpscaleImageRequest,
+    CreateDocsPhotoRequest,
 )
 from src.app.texts import (
     ProcessingImage,
-    GenerateVideo,
-    AddColor,
-    RemoveBackground,
-    UpscaleImage,
+    CreateDocsPhoto,
 )
 from src.app.keyboards import cancel_keyboard, new_generation
 from src.app.utils import extract_image_from_message, error_notify, generation_notify
@@ -35,30 +29,23 @@ router = Router()
 
 generate_map_state = {
     GenerateState.PROCESS_IMAGE: ImageRequest,
-    GenerateState.GENERATE_VIDEO: VideoRequest,
-    GenerateState.REMOVE_BACKGROUND: RemoveBackgroundRequest,
-    GenerateState.ADD_COLOR: AddColorRequest,
-    GenerateState.UPSCALE_IMAGE: UpscaleImageRequest,
+    GenerateState.CREATE_DOCS_PHOTO: CreateDocsPhotoRequest,
 }
 
 description_map_state = {
     GenerateState.PROCESS_IMAGE: ProcessingImage.SAVE_DESCRIPTION_TEXT,
-    GenerateState.GENERATE_VIDEO: GenerateVideo.SAVE_DESCRIPTION_TEXT,
 }
 
 generation_map_state = {
-    GenerateState.ADD_COLOR: AddColor.GENERATION_TEXT,
-    GenerateState.REMOVE_BACKGROUND: RemoveBackground.GENERATION_TEXT,
-    GenerateState.UPSCALE_IMAGE: UpscaleImage.GENERATION_TEXT,
+    GenerateState.PROCESS_IMAGE: ProcessingImage.GENERATION_TEXT,
+    GenerateState.CREATE_DOCS_PHOTO: CreateDocsPhoto.GENERATION_TEXT,
 }
 
 
 @router.message(
     (F.document | F.photo),
     StateFilter(
-        GenerateState.ADD_COLOR,
-        GenerateState.REMOVE_BACKGROUND,
-        GenerateState.UPSCALE_IMAGE,
+        GenerateState.CREATE_DOCS_PHOTO
     ),
 )
 async def generate_wihout_description(message: Message, state: FSMContext):
@@ -85,7 +72,7 @@ async def generate_wihout_description(message: Message, state: FSMContext):
         request_class = generate_map_state[current_state]
         request = request_class(image=image_base_64)
 
-        output_url = await replicate_service.generate(request)
+        output_url = await toapis_service.generate(request)
         async with httpx.AsyncClient() as client:
             resp = await client.get(output_url)
             if resp.status_code == 200:
@@ -112,7 +99,7 @@ async def generate_wihout_description(message: Message, state: FSMContext):
 
 
 @router.message(
-    F.text, StateFilter(GenerateState.PROCESS_IMAGE, GenerateState.GENERATE_VIDEO)
+    F.text, StateFilter(GenerateState.PROCESS_IMAGE)
 )
 async def save_description(message: Message, state: FSMContext):
     logger.info("Saving description: %s", message.text)
@@ -161,7 +148,7 @@ async def processing_image(
         await state.clear()
         await message.answer(ProcessingImage.GENERATION_TEXT)
 
-        output = await replicate_service.generate(
+        output = await toapis_service.generate(
             ImageRequest(
                 prompt=caption,
                 image_input=images,
@@ -181,42 +168,4 @@ async def processing_image(
         await error_notify.send_admin(
             message.from_user.username,
             f"Ошибка при обработке фото - {e}",
-        )
-
-
-@router.message(
-    (F.document | F.photo),
-    GenerateState.GENERATE_VIDEO,
-)
-async def generate_video(
-    message: Message,
-    state: FSMContext,
-):
-    try:
-        image = await extract_image_from_message(message)
-        data = await state.get_data()
-        caption: str | None = data.get("caption")
-
-        if not image:
-            await message.answer("🟠 Нужно отправить изображение. Начните заново!")
-            return
-
-        await message.answer(GenerateVideo.GENERATION_TEXT)
-
-        output = await replicate_service.generate(
-            VideoRequest(image=image, prompt=caption)
-        )
-        print(output)
-        await state.clear()
-        await message.answer_document(output, reply_markup=new_generation)
-        await generation_notify.send_admin(
-            message.from_user.username, "Генерация видео"
-        )
-    except Exception as e:
-        await message.answer(
-            "❌ Произошла ошибка, уведомление отправлено администратору."
-        )
-        await error_notify.send_admin(
-            message.from_user.username,
-            f"Произошла ошибка, при генерации видео - {e}",
         )

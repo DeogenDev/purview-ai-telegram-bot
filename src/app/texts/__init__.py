@@ -1,17 +1,11 @@
 """Текста бота"""
 
 from .choice import (
-    GenerateVideo,
     ProcessingImage,
-    RemoveBackground,
-    AddColor,
-    UpscaleImage,
+    CreateDocsPhoto,
 )
 
 __all__ = (
-    "GenerateVideo",
     "ProcessingImage",
-    "RemoveBackground",
-    "AddColor",
-    "UpscaleImage",
+    "CreateDocsPhoto",
 )
